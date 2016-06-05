@@ -1,0 +1,75 @@
+<!--
+Author: W3layouts
+Author URL: https://w3layouts.com/entrar-shadow-flat-form-template/
+License: Creative Commons Attribution 3.0 Unported
+License URL: http://creativecommons.org/licenses/by/3.0/
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Posters Galore Login</title>
+        <meta charset="utf-8">
+        <link href="css/login.css" rel='stylesheet' type='text/css' />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href='http://fonts.googleapis.com/css?family=Open+Sans:600italic,400,300,600,700' type='text/css'>
+        <link rel="prefetch" href="build/main.css"/>
+        <link rel="prefetch" href="data.js"/> 
+        <link rel="prefetch" href="build/ng-admin.min.js"/>
+        <link rel="prefetch" href="build/main.js"/>
+        <script src="node_modules/ng-admin/build/ng-admin.min.js"></script>
+       <script  src="build/main.js"  ></script>
+       <script src="bower_components/angular-base64/angular-base64.min.js"></script>
+       <script src="bower_components/angular-messages/angular-messages.js" ></script>
+       <!--<script src="bower_components/angular-utf8-base64/angular-utf8-base64.min.js"></script>-->
+
+      
+        <!--<script  src="build/ng-admin.min.js" ></script>-->
+      
+</head>
+<body  ng-app="myApp">
+     <div class="main"  >
+        <div class="login-form">
+            <h1>Qfplan  Member Login</h1>
+            <div class="head">
+                <img src="images/user.png" alt=""/>
+            </div>
+            <form   name="loginForm" ng-controller="LoginController"  novalidate>
+                <input type="text"   value="Username"  ng-model="credentials.account"  onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'Username';}"    required/>
+                <input type="password" value="Password" id="password"  ng-model="credentials.password" onfocus="this.value = '';" onblur="if (this.value == '') {this.value = 'Password';}"  required />
+                <input type="text" value="验证码" id="verify"  ng-model="credentials.verify"  onfocus="this.value = '';" onblur="if (this.value == '') {this.value = '验证码';}"  required />
+                <!--<img id='imgVcode' src='http://test.api.qfplan.com/Admin/login/verify.png'  />-->
+                 <button class="button button-small" ng-click="getVerifyCode()">
+                    获取验证码   
+                </button>
+                  <span class="help-block" style="color:red" ng-show="errorName">{{ errorName }}</span>
+                <div ><img   style="width:100%" ng-src="{{imgSrc}}"  /></div>
+                <!--<a href=#   onclick="document.getElementById('imgVcode').src='http://test.api.qfplan.com/Admin/login/verify.png?'+Math.random()"  />换一张</a>
+                <img   src="http://test.api.qfplan.com:8888/Admin/login/verify.png" />-->
+                <div class="submit">
+                    <input type="submit"    ng-click="login(credentials)"   ng-disabked="sign_up_form.$invalid"  value="Log In" >
+                </div>
+                <p><a href="#">Hint: QFplan </a></p>
+            </form>
+        </div>
+         <!-- start-copyright -->
+        <div class="copy-right">
+            <p>Template by <a href="http://w3layouts.com">w3layouts</a></p>
+        </div>
+        <!-- end-copyright -->
+    </div>
+   <!-- <script type="application/x-javascript">
+    window.addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false);
+    function hideURLbar(){
+        window.scrollTo(0,1);
+    }
+    function login(e) {
+        if (e) {
+            e.prevenDefault();
+        }
+        window.localStorage.setItem('posters_galore_login', document.getElementById('username').value);
+        window.location.href = "./index.html";
+        return false;
+    }
+    </script>-->
+</body>
+</html>
