@@ -1,27 +1,34 @@
 export default function (nga, admin) {
-
+   var API='http://test.api.qfplan.com/';//admin/access/login.json;
     var commands = admin.getEntity('commands');
-    commands.listView()
+    commands.listView().url(function(){
+     return  API+'Admin/order/list.json';
+    })
         .sortField('date')
         .sortDir('DESC')
         .fields([
-            nga.field('date', 'datetime'),
-            nga.field('reference').isDetailLink(true),
-            nga.field('customer_id', 'reference')
-                .label('Customer')
-                .targetEntity(admin.getEntity('customers'))
-                .targetField(nga.field('last_name').map((v, e) => e.first_name + ' ' + e.last_name))
-                .singleApiCall(ids => ({ 'id': ids }))
-                .cssClasses('hidden-xs'),
-            nga.field('nb_items')
-                .map((v,e) => e.basket.length)
-                .cssClasses('hidden-xs'),
-            nga.field('total', 'amount')
-                .cssClasses('hidden-xs'),
-            nga.field('status'),
-            nga.field('returned', 'boolean')
-                .cssClasses('hidden-xs')
+              nga.field('id'),
+                nga.field('order_main_id'),
+                  nga.field('goods_name'),
+                    nga.field('quality'),
+                       nga.field('con'),
+                          nga.field('trade_model'), 
+                             nga.field('area_id'),
+                                nga.field('goods_id'),
+                                   nga.field('quality'),
+                                      nga.field('seller_id'),
+            nga.field('buyer_status'),
+                nga.field('seller_status'),
+                    nga.field('handle_status'),
+                        nga.field('pay_status'),
+                            nga.field('seller_nickname'),
+                                nga.field('buyer_id'),
+                                    nga.field('order_name'),
+                                    nga.field('order_status'),
+                                    nga.field('pay_id'),
+                                    nga.field('buyer_nickname')
         ])
+        /*
         .filters([
             nga.field('q', 'template')
                 .label('')
@@ -48,27 +55,39 @@ export default function (nga, admin) {
                 .label('Min amount'),
             nga.field('returned', 'boolean')
         ])
+        */
         .listActions(['<ma-edit-button entry="::entry" entity="::entity" size="xs" label="Details"></ma-edit-button>']);
-    commands.editionView()
-        .title('Command #{{ entry.values.reference }}')
+    commands.editionView().url(function(orderID){
+     return  API+'Admin/order/'+orderID+'.json';
+    })
+        .title('Command # order details ')
         .fields([
-            nga.field('date', 'datetime')
+            nga.field('id').editable(false),
+            nga.field('order_main_id')
                 .editable(false),
-            nga.field('customer_id', 'reference')
-                .label('Customer')
-                .targetEntity(admin.getEntity('customers'))
-                .targetField(nga.field('last_name').map((v, e) => e.first_name + ' ' + e.last_name))
+            nga.field('goods_name'). editable(false),,
+            nga.field('quality')
                 .editable(false),
-            nga.field('Items', 'template')
-                .template('<basket command="entry.values"></basket>'),
-            nga.field('status', 'choice')
-                .choices([
-                    { label: 'ordered', value: 'ordered' },
-                    { label: 'delivered', value: 'delivered' },
-                    { label: 'cancelled', value: 'cancelled' }
-                ])
-                .cssClasses('col-sm-4 col-lg-2'),
-            nga.field('returned', 'boolean')
+            nga.field('order_main_id')
+                .editable(false),
+             nga.field('con'),
+                          nga.field('trade_model'), 
+                             nga.field('area_id'),
+                                nga.field('goods_id'),
+                                   nga.field('quality'),
+                                      nga.field('seller_id'),
+                                       nga.field('buyer_nickname'),
+            nga.field('buyer_status'),
+                nga.field('seller_status'),
+                    nga.field('handle_status'),
+                        nga.field('pay_status'),
+                            nga.field('seller_nickname'),
+                                nga.field('buyer_id'),
+                                    nga.field('order_name'),
+                                    nga.field('order_status'),
+                                    nga.field('pay_id'),
+                                    nga.field('buyer_nickname')
+            //nga.field('returned', 'boolean')
         ])
 
     return commands;

@@ -8,6 +8,11 @@ myApp.config(['NgAdminConfigurationProvider', 'FieldViewConfigurationProvider', 
     fvp.registerFieldView('amount', require('./types/AmountFieldView'));
 }]);
 
+
+var apiFlavor = require('./api_flavor');
+//myApp.run(['Restangular','$rootScope', apiFlavor.requestInterceptor]);
+//myApp.run(['Restangular', apiFlavor.responseInterceptor]);
+
 myApp.config(['NgAdminConfigurationProvider', function (nga) {
     var admin = nga.application('My First Admin')
       .baseApiUrl(API); // main API endpoint
@@ -104,10 +109,9 @@ myApp.controller('LoginController', function ($scope,$base64, $rootScope,$http,A
     });  
    $scope.login = function (credentials) {
     AuthService.login(credentials).then(function (user) {
-      //console.log(user);
       $rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
-      console.log(user);
       window.localStorage.setItem('posters_galore_login',user.data.data.name);
+      window.localStorage.setItem('TOKEN',$rootScope.token);
       window.location.href = "./index.html";
       //$scope.setCurrentUser(user);//
     }, function (user) {
@@ -158,9 +162,9 @@ myApp.factory('AuthService', function ($rootScope,$http, Session) {
                 verify:credentials.verify}
  }).success(function (data, status, headers, config) {
         $rootScope.token=headers('token');
+        myApp.value('TOKEN',headers('token'));
         Session.create(data.data.area_id,data.data.email,data.data.gender,data.data.id,data.data.name,data.data.status,data.data.telephone);
         return  data.data;
-
       }).error(function(data,status,headers,config){
          // console.log(data);
           return data;
@@ -179,10 +183,46 @@ myApp.factory('AuthService', function ($rootScope,$http, Session) {
   };
   return authService;
 });
+/*
+ myApp.config(['RestangularProvider', function(RestangularProvider) {
+    RestangularProvider.addElementTransformer('commands', function(element) {
+      console.log(element);
+        for (var key in element.data.list) {
+            element[key] = element.data.list[key];
+        }
 
-myApp.config(['RestangularProvider', function (RestangularProvider) {
-    RestangularProvider.addFullRequestInterceptor(function(element, operation, what, url, headers, params) {
-      console.log('heheda'+headers);
+        return element;
+    });
+}]);
+
+
+*/
+myApp.run(['Restangular','$window',function (Restangular,$window) {
+    Restangular.addElementTransformer('commands', function(element) {
+        return element;
+    });
+    Restangular.addResponseInterceptor(function(data, operation, what, url, response) {
+
+       console.log(what,operation,data);
+       if(operation=='get' && what=='commands'){
+
+        return  data.data;
+       }
+       if(operation=='getList' && what=='commands'){
+
+        return  data.data.list;
+       }
+        if (operation == "getList") {
+            var contentRange = response.headers('Content-Range');
+            response.totalCount = contentRange.split('/')[1];
+        }
+        return data;
+    });
+   Restangular.addFullRequestInterceptor(function(element, operation, what, url, headers, params) {
+         var token =$window.localStorage.getItem('TOKEN') || null;
+         if(!token || token=='undefined'){    window.location.href = "./login.html";}
+      //console.log('heheda'+$rootScope.token);
+        headers['TOKEN']= token;
         if (operation == "getList") {
             // custom pagination params
             if (params._page) {
@@ -208,4 +248,5 @@ myApp.config(['RestangularProvider', function (RestangularProvider) {
         }
         return { params: params };
     });
+
 }]);

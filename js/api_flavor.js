@@ -1,7 +1,13 @@
-function requestInterceptor(RestangularProvider) {
+function requestInterceptor(Restangular,$rootScope) {
     // use the custom query parameters function to format the API request correctly
-    RestangularProvider.addFullRequestInterceptor(function(element, operation, what, url, headers, params) {
+    Restangular.addFullRequestInterceptor(function(element, operation, what, url, headers, params) {
+  
+        headers['TOKEN']=$rootScope.token;
+        console.log($rootScope);
+        console.log(headers['TOKEN']);
         if (operation == "getList") {
+        //console.log($rootScope);
+
             // custom pagination params
             if (params._page) {
                 var start = (params._page - 1) * params._perPage;
@@ -30,8 +36,8 @@ function requestInterceptor(RestangularProvider) {
     });
 }
 
-function responseInterceptor(RestangularProvider) {
-    RestangularProvider.addResponseInterceptor(function(data, operation, what, url, response) {
+function responseInterceptor(Restangular) {
+    Restangular.addResponseInterceptor(function(data, operation, what, url, response) {
         if (operation == "getList") {
             var contentRange = response.headers('Content-Range');
             response.totalCount = contentRange.split('/')[1];

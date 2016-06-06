@@ -2,26 +2,25 @@ import moment from 'moment';
 import dashboardSummaryTemplate from './dashboardSummary.html';
 
 var oneMonthAgo = moment().subtract(1, 'months').toDate();
-
 var has_seen_alert = false;
-
 function dashboardSummary(Restangular) {
     'use strict';
 
     return {
         restrict: 'E',
         scope: {},
-        controller: function($scope) {
+        controller: function($scope,$rootScope) {
             $scope.stats = {};
             $scope.has_seen_alert = has_seen_alert;
             $scope.dismissAlert = () => {
                 has_seen_alert = true;
                 $scope.has_seen_alert = true;
             };
-            var API="http://test.qfplan.com:8888/";
-            console.log('test here!!');
+            console.log($rootScope.token);
+             Restangular.setDefaultHeaders({token: "x-restangular"});
+            var API="http://test.qfplan.com/";
             Restangular
-                .all(API+'commands')
+                .all(API+'Admin/order/list.json')
                 .getList({filter: '{"date_gte":"' + oneMonthAgo.toISOString() +'"}', sort: '["date","DESC"]'})
                 .then(commands => {
                     $scope.stats.commands = commands.data
