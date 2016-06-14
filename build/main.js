@@ -54,7 +54,7 @@
 
 	'use strict';
 	
-	var myApp = angular.module('myApp', ['ng-admin', 'base64', 'ngMessages']);
+	var myApp = angular.module('myApp', ['ng-admin', 'ngDialog', 'base64', 'ngMessages']);
 	
 	var API = 'http://test.api.qfplan.com/'; //admin/access/login.json;
 	
@@ -171,7 +171,7 @@
 	    }, function (user) {
 	      console.log(user);
 	      if (user.data.Code == 2000) {
-	        $scope.errorName = user.data.info;
+	        $scope.errorName = user.data.info || user.data.Msg;
 	        console.log($scope.errorName);
 	      }
 	      $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
@@ -180,8 +180,8 @@
 	  };
 	  $scope.getVerifyCode = function () {
 	    return $http({ method: 'get',
-	      url: 'http://test.api.qfplan.com/Admin/login/verify.png?' + Math.random(),
-	      headers: { 'TOKEN': $scope.createUUID() }
+	      url: 'http://test.api.qfplan.com/Admin/login/verify.png?' + Math.random() //,
+	      // headers:{'TOKEN':$scope. createUUID()}
 	    }).success(function (data, status, headers, config) {
 	      $scope.imgSrc = data;
 	      $rootScope.token = headers('token');
@@ -248,20 +248,33 @@
 	
 	
 	*/
-	myApp.run(['Restangular', '$window', function (Restangular, $window) {
+	myApp.run(['Restangular', '$window', 'ngDialog', function (Restangular, $window, ngDialog) {
 	  Restangular.addElementTransformer('commands', function (element) {
 	    return element;
 	  });
 	  Restangular.addResponseInterceptor(function (data, operation, what, url, response) {
 	
 	    console.log(what, operation, data);
-	    if (operation == 'get' && what == 'commands') {
+	    console.log(data.Code, data.Msg);
+	    if (data.Code == '2002') {
+	      ngDialog.open({
+	        template: '<p>TOKEN  expired,Please  login</p>',
+	        plain: true
+	      });
+	      window.localStorage.removeItem('posters_galore_login');
+	      window.location.href = "./login.html";
+	    }
+	    if (operation == 'get' && (what == 'commands' || what == 'categories')) {
 	
 	      return data.data;
 	    }
 	    if (operation == 'getList' && what == 'commands') {
 	
 	      return data.data.list;
+	    }
+	    if (operation == 'getList' && (what == 'categories' || what == 'products')) {
+	
+	      return data.data;
 	    }
 	    if (operation == "getList") {
 	      var contentRange = response.headers('Content-Range');
@@ -14695,10 +14708,51 @@
 	
 	exports['default'] = function (nga, admin) {
 	
+	    var API = 'http://test.api.qfplan.com/'; //admin/access/login.json;
 	    var categories = admin.getEntity('categories');
-	    categories.listView().fields([nga.field('name')]).listActions(['<ma-filtered-list-button entity-name="products" filter="{ category_id: entry.values.id }" size="xs" label="Related products"></ma-filtered-list-button>', 'edit', 'delete']);
-	    categories.creationView().fields([nga.field('name').validation({ required: true }), nga.field('', 'template').label('').editable(false).template('<span class="pull-right"><ma-filtered-list-button entity-name="products" filter="{ category_id: entry.values.id }" size="sm"></ma-filtered-list-button></span>')]);
-	    categories.editionView().fields(categories.creationView().fields());
+	    categories.listView().url(function () {
+	        return API + 'Admin/system/areas.json';
+	    }).title('Area  List').sortField('date').fields([nga.field('id', 'number'), nga.field('name'), nga.field('status', 'string'), nga.field('areaId', 'number'), nga.field('time', 'datetime'), nga.field('trade_model')]).listActions([/*'<ma-filtered-list-button entity-name="products" filter="{ category_id: entry.values.id }" size="xs" label="Related products"></ma-filtered-list-button>', */'edit', 'delete']);
+	    categories.creationView().url(function () {
+	        return API + 'Admin/system/areas.json';
+	    }).title('Create new Area').fields([nga.field('name').validation({ required: true }), nga.field('status', 'string'), nga.field('areaId', 'number'), nga.field('trade_model', 'choice').choices([{ value: '0', label: null }, //-null 1-S 2-P 3-SP'},
+	    { value: '1', label: 'S' }, { value: '2', label: 'P' }, { value: '3', label: 'SP' }]), nga.field('', 'template').label('').editable(false).template('<span class="pull-right"></span>')]).onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', 'ngDialog', function (progression, notification, $state, entry, entity, ngDialog) {
+	        // stop the progress bar
+	        // console.log(notification,entry,entity);//,);
+	        progression.done();
+	        // add a notification
+	        switch (entry.values.Code) {
+	            case '2000':
+	                notification.log('Element #' + entry.values.Msg + ' : ' + entry.values.info + ' ', { addnCls: 'humane-flatty-success' });
+	                break;
+	            default:
+	                notification.log('Element # add  Successfully ', { addnCls: 'humane-flatty-success' });
+	        }
+	        // redirect to the list view
+	        //$state.go($state.get('list'), { entity: entity.name() });
+	        // cancel the default action (redirect to the edition view)
+	        return false;
+	    }]);
+	    categories.editionView().title('Edit Area').url(function (ID) {
+	        return API + 'Admin/system/area/' + ID + '.json';
+	    }).fields(nga.field('id').editable(false), nga.field('name'), nga.field('status', 'string'), nga.field('areaId'), nga.field('time', 'datetime'), nga.field('trade_model', 'choice').choices([{ value: '0', label: null }, //-null 1-S 2-P 3-SP'},
+	    { value: '1', label: 'S' }, { value: '2', label: 'P' }, { value: '3', label: 'SP' }])).onSubmitSuccess(['progression', 'notification', '$state', 'entry', 'entity', 'ngDialog', function (progression, notification, $state, entry, entity, ngDialog) {
+	        // stop the progress bar
+	        // console.log(notification,entry,entity);//,);
+	        progression.done();
+	        // add a notification
+	        switch (entry.values.Code) {
+	            case '2000':
+	                notification.log('Element #' + entry.values.Msg + ' : ' + entry.values.info + ' ', { addnCls: 'humane-flatty-success' });
+	                break;
+	            default:
+	                notification.log('Element # add  Successfully ', { addnCls: 'humane-flatty-success' });
+	        }
+	        // redirect to the list view
+	        //$state.go($state.get('list'), { entity: entity.name() });
+	        // cancel the default action (redirect to the edition view)
+	        return false;
+	    }]);
 	
 	    return categories;
 	};
@@ -14731,19 +14785,40 @@
 	
 	exports['default'] = function (nga, admin) {
 	
-	    var products = admin.getEntity('products').label('Posters');
-	    products.listView().title('All Posters').fields([nga.field('i', 'template').label('').template('<zoom-in-modal thumbnail="{{ entry.values.thumbnail }}" image="{{ entry.values.image }}"></zoom-in-modal>'), nga.field('reference').isDetailLink(true), nga.field('price', 'amount').cssClasses('hidden-xs'), nga.field('width', 'float').format('0.00').cssClasses('hidden-xs'), nga.field('height', 'float').format('0.00').cssClasses('hidden-xs'), nga.field('category_id', 'reference').label('Category').targetEntity(admin.getEntity('categories')).targetField(nga.field('name')).singleApiCall(function (ids) {
-	        return { 'id': ids };
-	    }).cssClasses('hidden-xs'), nga.field('stock', 'number').cssClasses('hidden-xs')]).filters([nga.field('q', 'template').label('').pinned(true).template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>'), nga.field('category_id', 'reference').label('Category').targetEntity(admin.getEntity('categories')).targetField(nga.field('name')), nga.field('width_gte', 'number').label('Min width'), nga.field('width_lte', 'number').label('Max width'), nga.field('height_gte', 'number').label('Min height'), nga.field('height_lte', 'number').label('Max height'), nga.field('stock_lte', 'template').label('Low stock').defaultValue(10)]).listActions(['edit', 'delete']);
+	    var API = 'http://test.api.qfplan.com/'; //admin/access/login.json;
+	    var products = admin.getEntity('products');
+	    products.listView().url(function () {
+	        return API + 'Admin/system/areas/cache.json';
+	    }).title('All  Redis Caches').fields([nga.field('id').isDetailLink(true), nga.field('name', 'string').cssClasses('hidden-xs'), nga.field('status', 'float').format('0').cssClasses('hidden-xs'), nga.field('level', 'number').cssClasses('hidden-xs'), nga.field('time', 'datetime').cssClasses('hidden-xs'), nga.field('admin_id', 'number').cssClasses('hidden-xs')])
+	    /*  .filters([
+	          nga.field('q', 'template')
+	              .label('')
+	              .pinned(true)
+	              .template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>'),
+	          nga.field('category_id', 'reference')
+	              .label('Category')
+	              .targetEntity(admin.getEntity('categories'))
+	              .targetField(nga.field('name')),
+	          nga.field('width_gte', 'number')
+	              .label('Min width'),
+	          nga.field('width_lte', 'number')
+	              .label('Max width'),
+	          nga.field('height_gte', 'number')
+	              .label('Min height'),
+	          nga.field('height_lte', 'number')
+	              .label('Max height'),
+	          nga.field('stock_lte', 'template')
+	              .label('Low stock')
+	              .defaultValue(10)
+	      ])
+	              */
+	    .listActions(['edit', 'delete']);
 	    products.creationView().title('Create new Poster').fields([nga.field('reference').validation({ required: true }).cssClasses('col-sm-4'), nga.field('price', 'amount').validation({ required: true }).cssClasses('col-sm-4'), nga.field('width', 'float').validation({ required: true }).cssClasses('col-sm-2'), nga.field('height', 'float').validation({ required: true }).cssClasses('col-sm-2'), nga.field('category_id', 'reference').label('Category').targetEntity(admin.getEntity('categories')).targetField(nga.field('name')).validation({ required: true }).cssClasses('col-sm-4'), nga.field('stock', 'number').validation({ required: true, min: 2 }).cssClasses('col-sm-2'), nga.field('thumbnail').validation({ required: true }).cssClasses('col-sm-4'), nga.field('image').validation({ required: true }).cssClasses('col-sm-4'), nga.field('description', 'wysiwyg')]);
-	    products.editionView().template(_productsEditionTemplateHtml2['default']).fields(products.creationView().fields(), nga.field('reviews', 'referenced_list').targetEntity(admin.getEntity('reviews')).targetReferenceField('product_id').permanentFilters({ status: 'accepted' }).targetFields([nga.field('date').label('Posted').map(fromNow).isDetailLink(true), nga.field('customer_id', 'reference').label('Customer').targetEntity(admin.getEntity('customers')).targetField(nga.field('last_name').map(function (v, e) {
-	        return e.first_name + ' ' + e.last_name;
-	    })).cssClasses('hidden-xs'), nga.field('rating', 'template').template('<star-rating stars="{{ entry.values.rating }}"></star-rating>'), nga.field('comment').map(function truncate(value) {
-	        if (!value) {
-	            return '';
-	        }
-	        return value.length > 50 ? value.substr(0, 50) + '...' : value;
-	    })]).listActions(['<ma-edit-button entry="::entry" entity="::entity" size="xs" label="Details"></ma-edit-button>']).sortField('date').sortDir('DESC'));
+	    products.editionView().title('Put Area Cache').url(function () {
+	        return API + 'Admin/system/areas/cache.json';
+	    })
+	    // .template(productsEditionTemplate)
+	    .fields();
 	
 	    return products;
 	};
@@ -14832,7 +14907,16 @@
 	    var commands = admin.getEntity('commands');
 	    commands.listView().url(function () {
 	        return API + 'Admin/order/list.json';
-	    }).sortField('date').sortDir('DESC').fields([nga.field('id'), nga.field('order_main_id'), nga.field('goods_name'), nga.field('quality'), nga.field('con'), nga.field('trade_model'), nga.field('area_id'), nga.field('goods_id'), nga.field('quality'), nga.field('seller_id'), nga.field('buyer_status'), nga.field('seller_status'), nga.field('handle_status'), nga.field('pay_status'), nga.field('seller_nickname'), nga.field('buyer_id'), nga.field('order_name'), nga.field('order_status'), nga.field('pay_id'), nga.field('buyer_nickname')])
+	    }).sortField('date').sortDir('DESC').fields([nga.field('id', 'number'), nga.field('order_main_id'), nga.field('goods_name'), nga.field('quality'), nga.field('con'), nga.field('trade_model'), nga.field('area_id'), nga.field('goods_id'), nga.field('quality'), nga.field('seller_id'), nga.field('buyer_status'), nga.field('seller_status'), nga.field('handle_status'), nga.field('pay_status'), nga.field('seller_nickname'), nga.field('buyer_id'), nga.field('order_name'), nga.field('order_status'), nga.field('pay_id'), nga.field('buyer_nickname'),
+	    //   nga.field('buyer_email'),
+	    //     nga.field('buyer_name'),
+	    nga.field('abnormal_name', 'string'), nga.field('abnormal_id', 'number').isDetailLink(true).label('异常订单编号'),
+	    //   nga.field('abnormal_time','datetime'),
+	    nga.field('abnormal_status', 'string')
+	    //mga.field('buyer_phone'),
+	    // "buyer_avatar": "430b645cabdb557d.png",       // 买家头像
+	
+	    ])
 	    /*
 	    .filters([
 	        nga.field('q', 'template')
@@ -14864,7 +14948,8 @@
 	    .listActions(['<ma-edit-button entry="::entry" entity="::entity" size="xs" label="Details"></ma-edit-button>']);
 	    commands.editionView().url(function (orderID) {
 	        return API + 'Admin/order/' + orderID + '.json';
-	    }).title('Command # order details ').fields([nga.field('id').editable(false), nga.field('order_main_id').editable(false), nga.field('goods_name').editable(false),, nga.field('quality').editable(false), nga.field('order_main_id').editable(false), nga.field('con'), nga.field('trade_model'), nga.field('area_id'), nga.field('goods_id'), nga.field('quality'), nga.field('seller_id'), nga.field('buyer_nickname'), nga.field('buyer_status'), nga.field('seller_status'), nga.field('handle_status'), nga.field('pay_status'), nga.field('seller_nickname'), nga.field('buyer_id'), nga.field('order_name'), nga.field('order_status'), nga.field('pay_id'), nga.field('buyer_nickname')
+	    }).title('Command # order details ').fields([nga.field('id').editable(false), nga.field('order_main_id').editable(false), nga.field('goods_name').editable(false),, nga.field('quality').editable(false), nga.field('order_main_id').editable(false), nga.field('con'), nga.field('trade_model'), nga.field('area_id'), nga.field('goods_id'), nga.field('quality'), nga.field('seller_id'), nga.field('buyer_nickname'), nga.field('buyer_status'), nga.field('seller_status'), nga.field('handle_status'), nga.field('pay_status'), nga.field('seller_nickname'), nga.field('buyer_id'), nga.field('order_name'), nga.field('order_status'), nga.field('pay_id'), nga.field('buyer_nickname'), nga.field('abnormal_name', 'string'), nga.field('abnormal_id', 'number').isDetailLink(true).label('异常订单编号abnormal_id').editable(false), nga.field('abnormal_time', 'datetime'), nga.field('abnormal_status', 'string'), nga.field('reason', 'string'), nga.field('abnormal_finish_time', 'datetime'), nga.field('amount_return', 'number').format('$0,0.00').editable(true).label('退款金额'), nga.field('number_return', 'number').format('$0,0.00').editable(true).label('退款number'), nga.field('qf_pay_id', 'number').label(' 清风支付编号'), nga.field('qf_pay_time', 'datetime').label('清风支付时间'), nga.field('qf_pay_status', 'string').label('qf_pay_status'), nga.field('buyer_amount', 'number').label('买家收取金额'), nga.field('seller_amount', 'number').format('$0,0.00').label('卖家收取金额'), nga.field('admin_id', 'number').format('$0,0.00').label('异常订单操作管理员编号')
+	
 	    //nga.field('returned', 'boolean')
 	    ]);
 	
@@ -14960,8 +15045,18 @@
 	        return path == '/segments';
 	    }).icon('<span class="fa fa-scissors fa-fw"></span>'))).addChild(nga.menu().title('Sales').icon('<span class="fa fa-shopping-cart fa-fw"></span>').active(function (path) {
 	        return path.indexOf('/commands') === 0;
-	    }).addChild(nga.menu().title('Orders').link('/commands/list?search={"status":"ordered"}').icon('<span class="fa fa-credit-card fa-fw"></span>')).addChild(nga.menu().title('Invoices').link('/commands/list?search={"status":"delivered"}').icon('<span class="fa fa-usd fa-fw"></span>')).addChild(nga.menu().title('Cancels').link('/commands/list?search={"status":"cancelled"}').icon('<span class="fa fa-hand-o-left fa-fw"></span>'))).addChild(nga.menu().title('Catalog').icon('<span class="fa fa-th-list fa-fw"></span>').addChild(nga.menu(admin.getEntity('products')) // nga.menu(entity) sets defaults title, link and active values correctly
-	    .icon('<span class="fa fa-picture-o fa-fw"></span>')).addChild(nga.menu(admin.getEntity('categories')).icon('<span class="fa fa-tags fa-fw"></span>'))).addChild(nga.menu(admin.getEntity('reviews')).icon('<span class="fa fa-comments fa-fw"></span>')).addChild(nga.menu().title('Configuration').icon('<span class="fa fa-cog fa-fw"></span>').link('/settings/show/1').active(function (path) {
+	    }).addChild(nga.menu().title('Orders').link('/commands/list?search={"status":"ordered"}').icon('<span class="fa fa-credit-card fa-fw"></span>'))
+	    /* .addChild(nga.menu()
+	         .title('Invoices')
+	         .link('/commands/list?search={"status":"delivered"}')
+	         .icon('<span class="fa fa-usd fa-fw"></span>'))
+	     .addChild(nga.menu()
+	         .title('Cancels')
+	         .link('/commands/list?search={"status":"cancelled"}')
+	         .icon('<span class="fa fa-hand-o-left fa-fw"></span>'))
+	         */
+	    ).addChild(nga.menu().title('Catalog').icon('<span class="fa fa-th-list fa-fw"></span>').addChild(nga.menu(admin.getEntity('categories')).title('areas').icon('<span class="fa fa-tags fa-fw"></span>')).addChild(nga.menu(admin.getEntity('products')).title('areas  cache') // nga.menu(entity) sets defaults title, link and active values correctly
+	    .icon('<span class="fa fa-picture-o fa-fw"></span>'))).addChild(nga.menu(admin.getEntity('reviews')).icon('<span class="fa fa-comments fa-fw"></span>')).addChild(nga.menu().title('Configuration').icon('<span class="fa fa-cog fa-fw"></span>').link('/settings/show/1').active(function (path) {
 	        return path.indexOf('/settings') === 0;
 	    }));
 	};

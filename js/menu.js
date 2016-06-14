@@ -26,7 +26,7 @@ export default function (nga, admin) {
                 .title('Orders')
                 .link('/commands/list?search={"status":"ordered"}')
                 .icon('<span class="fa fa-credit-card fa-fw"></span>'))
-            .addChild(nga.menu()
+           /* .addChild(nga.menu()
                 .title('Invoices')
                 .link('/commands/list?search={"status":"delivered"}')
                 .icon('<span class="fa fa-usd fa-fw"></span>'))
@@ -34,14 +34,15 @@ export default function (nga, admin) {
                 .title('Cancels')
                 .link('/commands/list?search={"status":"cancelled"}')
                 .icon('<span class="fa fa-hand-o-left fa-fw"></span>'))
+                */
         )
         .addChild(nga.menu()
             .title('Catalog')
             .icon('<span class="fa fa-th-list fa-fw"></span>')
-            .addChild(nga.menu(admin.getEntity('products')) // nga.menu(entity) sets defaults title, link and active values correctly
-                .icon('<span class="fa fa-picture-o fa-fw"></span>'))
-            .addChild(nga.menu(admin.getEntity('categories'))
-                .icon('<span class="fa fa-tags fa-fw"></span>'))
+            .addChild(nga.menu(admin.getEntity('categories')).title('areas')
+                .icon('<span class="fa fa-tags fa-fw"></span>')).
+            addChild(nga.menu(admin.getEntity('products')).title('areas  cache')// nga.menu(entity) sets defaults title, link and active values correctly
+               .icon('<span class="fa fa-picture-o fa-fw"></span>'))
         )
         .addChild(nga.menu(admin.getEntity('reviews'))
             .icon('<span class="fa fa-comments fa-fw"></span>'))

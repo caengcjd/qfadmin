@@ -7,7 +7,7 @@ export default function (nga, admin) {
         .sortField('date')
         .sortDir('DESC')
         .fields([
-              nga.field('id'),
+              nga.field('id','number'),
                 nga.field('order_main_id'),
                   nga.field('goods_name'),
                     nga.field('quality'),
@@ -26,7 +26,16 @@ export default function (nga, admin) {
                                     nga.field('order_name'),
                                     nga.field('order_status'),
                                     nga.field('pay_id'),
-                                    nga.field('buyer_nickname')
+                                    nga.field('buyer_nickname'),
+                                 //   nga.field('buyer_email'),
+                               //     nga.field('buyer_name'),
+                                    nga.field('abnormal_name','string'),
+                                    nga.field('abnormal_id','number').isDetailLink(true).label('异常订单编号'),
+                                 //   nga.field('abnormal_time','datetime'),
+                                    nga.field('abnormal_status','string')
+                                    //mga.field('buyer_phone'),
+                                   // "buyer_avatar": "430b645cabdb557d.png",       // 买家头像
+                              
         ])
         /*
         .filters([
@@ -86,7 +95,22 @@ export default function (nga, admin) {
                                     nga.field('order_name'),
                                     nga.field('order_status'),
                                     nga.field('pay_id'),
-                                    nga.field('buyer_nickname')
+                                    nga.field('buyer_nickname'),      
+                                    nga.field('abnormal_name','string'),
+                                    nga.field('abnormal_id','number').isDetailLink(true).label('异常订单编号abnormal_id').editable(false),
+                                    nga.field('abnormal_time','datetime'),
+                                    nga.field('abnormal_status','string'),
+                                       nga.field('reason','string'),
+                                          nga.field('abnormal_finish_time','datetime'),
+                                             nga.field('amount_return','number').format('$0,0.00').editable(true).label('退款金额'),
+                                             nga.field('number_return','number').format('$0,0.00').editable(true).label('退款number'),
+                                                nga.field('qf_pay_id','number').label(' 清风支付编号'),
+                                                   nga.field('qf_pay_time','datetime').label('清风支付时间'),
+                                                      nga.field('qf_pay_status','string').label('qf_pay_status'),
+                                                         nga.field('buyer_amount','number').label('买家收取金额'),
+                                                            nga.field('seller_amount','number').format('$0,0.00').label('卖家收取金额'),
+                                                              nga.field('admin_id','number').format('$0,0.00').label('异常订单操作管理员编号')
+
             //nga.field('returned', 'boolean')
         ])
 

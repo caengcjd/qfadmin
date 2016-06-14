@@ -1,4 +1,4 @@
-var myApp = angular.module('myApp', ['ng-admin','base64','ngMessages']);
+var myApp = angular.module('myApp', ['ng-admin','ngDialog','base64','ngMessages']);
 
 
 var API='http://test.api.qfplan.com/';//admin/access/login.json;
@@ -117,7 +117,7 @@ myApp.controller('LoginController', function ($scope,$base64, $rootScope,$http,A
     }, function (user) {
       console.log(user);
       if(user.data.Code==2000){
-        $scope.errorName=user.data.info;
+        $scope.errorName=user.data.info || user.data.Msg;
         console.log($scope.errorName);
        }
       $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
@@ -127,8 +127,8 @@ myApp.controller('LoginController', function ($scope,$base64, $rootScope,$http,A
 $scope.getVerifyCode = function () {
         return $http
          ({method:'get',
-          url: 'http://test.api.qfplan.com/Admin/login/verify.png?'+Math.random(),
-          headers:{'TOKEN':$scope. createUUID()}
+          url: 'http://test.api.qfplan.com/Admin/login/verify.png?'+Math.random()//,
+         // headers:{'TOKEN':$scope. createUUID()}
          }).success(function (data, status, headers, config) {
          $scope.imgSrc=data;
           $rootScope.token=headers('token');
@@ -197,20 +197,33 @@ myApp.factory('AuthService', function ($rootScope,$http, Session) {
 
 
 */
-myApp.run(['Restangular','$window',function (Restangular,$window) {
+myApp.run(['Restangular','$window','ngDialog',function (Restangular,$window,ngDialog) {
     Restangular.addElementTransformer('commands', function(element) {
         return element;
     });
     Restangular.addResponseInterceptor(function(data, operation, what, url, response) {
 
        console.log(what,operation,data);
-       if(operation=='get' && what=='commands'){
+       console.log(data.Code,data.Msg);
+       if(data.Code=='2002'){
+         ngDialog.open({
+           template: '<p>TOKEN  expired,Please  login</p>',
+           plain: true
+          });
+            window.localStorage.removeItem('posters_galore_login');
+            window.location.href = "./login.html";
+       }
+       if(operation=='get' && (what=='commands'||what=='categories')){
 
         return  data.data;
        }
-       if(operation=='getList' && what=='commands'){
+       if(operation=='getList' &&what=='commands'){
 
         return  data.data.list;
+       }
+       if(operation=='getList' &&(what=='categories'||what=='products')){
+
+        return  data.data;
        }
         if (operation == "getList") {
             var contentRange = response.headers('Content-Range');

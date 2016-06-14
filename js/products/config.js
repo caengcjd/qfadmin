@@ -4,34 +4,28 @@ import productsEditionTemplate from './productsEditionTemplate.html';
 var fromNow = v => moment(v).fromNow();
 
 export default function (nga, admin) {
-
-    var products = admin.getEntity('products')
-        .label('Posters');
-    products.listView()
-        .title('All Posters')
+ 
+    var API='http://test.api.qfplan.com/';//admin/access/login.json;
+    var products = admin.getEntity('products');
+    products.listView().url(function(){
+     return  API+'Admin/system/areas/cache.json';
+    })
+        .title('All  Redis Caches')
         .fields([
-            nga.field('i', 'template')
-                .label('')
-                .template('<zoom-in-modal thumbnail="{{ entry.values.thumbnail }}" image="{{ entry.values.image }}"></zoom-in-modal>'),
-            nga.field('reference').isDetailLink(true),
-            nga.field('price', 'amount')
+            nga.field('id').isDetailLink(true),
+            nga.field('name', 'string')
                 .cssClasses('hidden-xs'),
-            nga.field('width', 'float')
-                .format('0.00')
+            nga.field('status', 'float')
+                .format('0')
                 .cssClasses('hidden-xs'),
-            nga.field('height', 'float')
-                .format('0.00')
+            nga.field('level', 'number')
                 .cssClasses('hidden-xs'),
-            nga.field('category_id', 'reference')
-                .label('Category')
-                .targetEntity(admin.getEntity('categories'))
-                .targetField(nga.field('name'))
-                .singleApiCall(ids => ({ 'id': ids }))
+            nga.field('time', 'datetime')
                 .cssClasses('hidden-xs'),
-            nga.field('stock', 'number')
+            nga.field('admin_id', 'number')
                 .cssClasses('hidden-xs'),
         ])
-        .filters([
+      /*  .filters([
             nga.field('q', 'template')
                 .label('')
                 .pinned(true)
@@ -52,6 +46,7 @@ export default function (nga, admin) {
                 .label('Low stock')
                 .defaultValue(10)
         ])
+                */
         .listActions(['edit', 'delete']);
     products.creationView()
         .title('Create new Poster')
@@ -85,38 +80,16 @@ export default function (nga, admin) {
                 .cssClasses('col-sm-4'),
             nga.field('description', 'wysiwyg')
         ]);
-    products.editionView()
-        .template(productsEditionTemplate)
-        .fields(
-            products.creationView().fields(),
-            nga.field('reviews', 'referenced_list')
-                    .targetEntity(admin.getEntity('reviews'))
-                    .targetReferenceField('product_id')
-                    .permanentFilters({ status: 'accepted' })
-                    .targetFields([
-                        nga.field('date')
-                            .label('Posted')
-                            .map(fromNow)
-                            .isDetailLink(true),
-                        nga.field('customer_id', 'reference')
-                            .label('Customer')
-                            .targetEntity(admin.getEntity('customers'))
-                            .targetField(nga.field('last_name').map((v, e) => e.first_name + ' ' + e.last_name))
-                            .cssClasses('hidden-xs'),
-                        nga.field('rating', 'template')
-                            .template('<star-rating stars="{{ entry.values.rating }}"></star-rating>'),
-                        nga.field('comment')
-                            .map(function truncate(value) {
-                                if (!value) {
-                                    return '';
-                                }
-                                return value.length > 50 ? value.substr(0, 50) + '...' : value;
-                            })
-                    ])
-                    .listActions(['<ma-edit-button entry="::entry" entity="::entity" size="xs" label="Details"></ma-edit-button>'])
-                    .sortField('date')
-                    .sortDir('DESC')
-        );
+    products.editionView().title('Put Area Cache')
+    .url(function(){
+     return  API+'Admin/system/areas/cache.json';
+    })
+       // .template(productsEditionTemplate)
+       .fields(
+         
+            );
+
+
 
     return products;
 }

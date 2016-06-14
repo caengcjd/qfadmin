@@ -1,0 +1,23 @@
+<html>
+<head>
+<script>
+  function change(A){
+
+       if(A.value=="上"){
+		  
+	acc.style.backgroundPositionY="0px";}
+else if(A.value=="下"){
+	acc.style.backgroundPositionY="-150px";}
+else if(A.value=="左"){
+	acc.style.backgroundPositionY="-300px";}
+else if(A.value=="右"){
+	acc.style.backgroundPositionY="-450px";}
+  }
+</script>
+</head>
+<div id="acc" style="background-position-y:0px;background-image: url('2.png');width:200px;height:160px"></div>
+<input type="button" value="上"  onclick="change(this)">
+<input type="button" value="下"  onclick="change(this)">
+<input type="button" value="左"  onclick="change(this)">
+<input type="button" value="右"  onclick="change(this)">
+</html>
