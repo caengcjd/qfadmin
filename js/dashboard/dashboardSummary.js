@@ -17,7 +17,7 @@ function dashboardSummary(Restangular) {
                 $scope.has_seen_alert = true;
             };
             console.log($rootScope.token);
-             Restangular.setDefaultHeaders({token: "x-restangular"});
+            /* Restangular.setDefaultHeaders({token: "x-restangular"});
             var API="http://test.qfplan.com/";
             Restangular
                 .all(API+'Admin/order/list.json')
@@ -42,6 +42,7 @@ function dashboardSummary(Restangular) {
                 .then(reviews => {
                     $scope.stats.reviews = reviews.data.reduce(nb => ++nb, 0)
                 });
+                */
         },
         template: dashboardSummaryTemplate
     };

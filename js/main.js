@@ -197,21 +197,19 @@ myApp.factory('AuthService', function ($rootScope,$http, Session) {
 
 
 */
-myApp.run(['Restangular','$window','ngDialog',function (Restangular,$window,ngDialog) {
+myApp.run(['Restangular','progression', 'notification','$http','$window','ngDialog',function (Restangular,progression, notification,$http,$window,ngDialog) {
     Restangular.addElementTransformer('commands', function(element) {
         return element;
     });
     Restangular.addResponseInterceptor(function(data, operation, what, url, response) {
 
        console.log(what,operation,data);
-       console.log(data.Code,data.Msg);
        if(data.Code=='2002'){
-         ngDialog.open({
-           template: '<p>TOKEN  expired,Please  login</p>',
-           plain: true
-          });
+          notification.log(`Please  login!`, { addnCls: 'humane-flatty-success' });
             window.localStorage.removeItem('posters_galore_login');
+            window.localStorage.removeItem('TOKEN');
             window.location.href = "./login.html";
+            return   data;
        }
        if(operation=='get' && (what=='commands'||what=='categories')){
 
@@ -231,35 +229,44 @@ myApp.run(['Restangular','$window','ngDialog',function (Restangular,$window,ngDi
         }
         return data;
     });
-   Restangular.addFullRequestInterceptor(function(element, operation, what, url, headers, params) {
-         var token =$window.localStorage.getItem('TOKEN') || null;
-         if(!token || token=='undefined'){    window.location.href = "./login.html";}
-      //console.log('heheda'+$rootScope.token);
-        headers['TOKEN']= token;
-        if (operation == "getList") {
-            // custom pagination params
-            if (params._page) {
-                params._start = (params._page - 1) * params._perPage;
-                params._end = params._page * params._perPage;
-            }
-            delete params._page;
-            delete params._perPage;
-            // custom sort params
-            if (params._sortField) {
-                params._sort = params._sortField;
-                params._order = params._sortDir;
-                delete params._sortField;
-                delete params._sortDir;
-            }
-            // custom filters
-            if (params._filters) {
-                for (var filter in params._filters) {
-                    params[filter] = params._filters[filter];
-                }
-                delete params._filters;
-            }
-        }
-        return { params: params };
-    });
 
+   Restangular.addFullRequestInterceptor(function(element, operation, what, url, headers, params) {
+
+    //console.log(params,element);  
+     var token =$window.localStorage.getItem('TOKEN') || null;
+    if(!token || token=='undefined'){    window.location.href = "./login.html";}
+      headers['TOKEN']= token;
+    if(operation=='put'&&what=='commands'){
+      url='http://test.api.qfplan.com/Admin/order/abnormal/handle.json';
+     $http({
+     method:'put',  
+     url:url,
+     headers:headers, 
+     params: element,
+    transformRequest: function(obj) {  
+     var str = [];  
+     for(var p in obj){  
+       str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));  
+     }  
+     console.log(str.join("&"));
+     return str.join("&");  
+     } 
+      }).success(function (data, status, headers, config) {
+           console.log(data);
+           progression.done();
+                // add a notification
+                switch(data.Code){
+                    case 2000:
+                           notification.log(`Element #${data.Msg} : ${data.info} `, { addnCls: 'humane-flatty-success' });
+                           break;
+                    default:
+                            notification.log(`Element # add  Successfully `, { addnCls: 'humane-flatty-success' });
+                }
+
+      }).error(function(data,status,headers,config){
+          notification.log(`Element # add  failed! `, { addnCls: 'humane-flatty-success' });
+      });
+    }//if 
+        return null;
+    });
 }]);

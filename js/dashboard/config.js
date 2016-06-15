@@ -3,20 +3,21 @@ var fromNow = v => moment(v).fromNow();
 
 export default function (nga, admin) {
 
+var API='http://test.api.qfplan.com/';//admin/access/login.json
     return nga.dashboard()
-        .addCollection(nga.collection(admin.getEntity('commands'))
+        .addCollection(nga.collection(admin.getEntity('commands').url(API+'Admin/order/list.json'))
                 .name('monthly_revenue')
                 .title('Monthly revenue')
                 //.permanentFilters({ date: { gte: moment().substract(1, 'months').toDate() } })
                 .fields([
-                    nga.field('date', 'datetime'),
-                    nga.field('total', 'amount')
+                         nga.field('order_name'),
+                         nga.field('order_status'),
                 ])
-                .sortField('date')
+                .sortField('id')
                 .sortDir('ASC')
                 .perPage(100)
         )
-        .addCollection(nga.collection(admin.getEntity('commands'))
+     /*   .addCollection(nga.collection(admin.getEntity('commands'))
             .name('pending_orders')
             .title('Pending orders')
             .fields([
@@ -37,6 +38,7 @@ export default function (nga, admin) {
             .sortField('date')
             .sortDir('DESC')
         )
+        
         .addCollection(nga.collection(admin.getEntity('reviews'))
             .name('latest_reviews')
             .title('Latest reviews')
@@ -77,13 +79,14 @@ export default function (nga, admin) {
             .sortDir('DESC')
             .perPage(10)
         )
+        */
         .template(`
 <div class="row dashboard-starter"></div>
 <dashboard-summary></dashboard-summary>
 <div class="row dashboard-content">
     <div class="col-lg-6">
         <div class="panel panel-default">
-            <ma-dashboard-panel collection="dashboardController.collections.pending_orders" entries="dashboardController.entries.pending_orders" datastore="dashboardController.datastore"></ma-dashboard-panel>
+            <ma-dashboard-panel collection="dashboardController.collections.monthly_revenue" entries="dashboardController.entries.monthly_revenue" datastore="dashboardController.datastore"></ma-dashboard-panel>
         </div>
     </div>
     <div class="col-lg-6">

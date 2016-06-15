@@ -37,9 +37,8 @@ export default function (nga, admin) {
                                    // "buyer_avatar": "430b645cabdb557d.png",       // 买家头像
                               
         ])
-        /*
         .filters([
-            nga.field('q', 'template')
+          /*  nga.field('q', 'template')
                 .label('')
                 .pinned(true)
                 .template('<div class="input-group"><input type="text" ng-model="value" placeholder="Search" class="form-control"></input><span class="input-group-addon"><i class="glyphicon glyphicon-search"></i></span></div>'),
@@ -62,9 +61,9 @@ export default function (nga, admin) {
                 .label('Passed before'),
             nga.field('total_gte', 'amount')
                 .label('Min amount'),
-            nga.field('returned', 'boolean')
+                */
+            nga.field('abnormal_id','number')
         ])
-        */
         .listActions(['<ma-edit-button entry="::entry" entity="::entity" size="xs" label="Details"></ma-edit-button>']);
     commands.editionView().url(function(orderID){
      return  API+'Admin/order/'+orderID+'.json';
@@ -102,14 +101,14 @@ export default function (nga, admin) {
                                     nga.field('abnormal_status','string'),
                                        nga.field('reason','string'),
                                           nga.field('abnormal_finish_time','datetime'),
-                                             nga.field('amount_return','number').format('$0,0.00').editable(true).label('退款金额'),
-                                             nga.field('number_return','number').format('$0,0.00').editable(true).label('退款number'),
-                                                nga.field('qf_pay_id','number').label(' 清风支付编号'),
-                                                   nga.field('qf_pay_time','datetime').label('清风支付时间'),
-                                                      nga.field('qf_pay_status','string').label('qf_pay_status'),
-                                                         nga.field('buyer_amount','number').label('买家收取金额'),
-                                                            nga.field('seller_amount','number').format('$0,0.00').label('卖家收取金额'),
-                                                              nga.field('admin_id','number').format('$0,0.00').label('异常订单操作管理员编号')
+                                      //       nga.field('amount_return','number').format('$0,0.00').editable(true).label('退款金额'),
+                                       //      nga.field('number_return','number').format('$0,0.00').editable(true).label('退款number'),
+                                       //         nga.field('qf_pay_id','number').label(' 清风支付编号'),
+                                       //            nga.field('qf_pay_time','datetime').label('清风支付时间'),
+                                         //             nga.field('qf_pay_status','string').label('qf_pay_status'),
+                                        //                 nga.field('buyer_amount','number').label('买家收取金额'),
+                                            //                nga.field('seller_amount','number').format('$0,0.00').label('卖家收取金额'),
+                                               //               nga.field('admin_id','number').format('$0,0.00').label('异常订单操作管理员编号')
 
             //nga.field('returned', 'boolean')
         ])
