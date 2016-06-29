@@ -8,10 +8,8 @@ export default function (nga, admin) {
                 .title('Leads')
                 .link('/customers/list?search={"has_ordered":"false"}') // use the same entity list for several menu items
                 .icon('<span class="fa fa-user-times fa-fw"></span>')) // no active() function => will never appear active
-            .addChild(nga.menu()
-                .title('Customers')
-                .link('/customers/list?search={"has_ordered":"true"}') // use the same entity list for several menu items
-                .icon('<span class="fa fa-user fa-fw"></span>'))
+            .addChild(nga.menu(admin.getEntity('customers')).title('Users')
+                .icon('<span class="fa fa-tags fa-fw"></span>'))
             .addChild(nga.menu()
                 .title('Segments')
                 .link('/segments') // this state isn't handled by ng-admin - no problem
@@ -42,6 +40,13 @@ export default function (nga, admin) {
             .addChild(nga.menu(admin.getEntity('categories')).title('areas')
                 .icon('<span class="fa fa-tags fa-fw"></span>')).
             addChild(nga.menu(admin.getEntity('products')).title('areas  cache')// nga.menu(entity) sets defaults title, link and active values correctly
+               .icon('<span class="fa fa-picture-o fa-fw"></span>'))
+        ).addChild(nga.menu()
+            .title('Products')
+            .icon('<span class="fa fa-th-list fa-fw"></span>')
+            .addChild(nga.menu(admin.getEntity('items')).title('Items')
+                .icon('<span class="fa fa-tags fa-fw"></span>')).
+            addChild(nga.menu(admin.getEntity('tags')).title('Tags')// nga.menu(entity) sets defaults title, link and active values correctly
                .icon('<span class="fa fa-picture-o fa-fw"></span>'))
         )
         .addChild(nga.menu(admin.getEntity('reviews'))

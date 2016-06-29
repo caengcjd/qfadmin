@@ -27,8 +27,6 @@ export default function (nga, admin) {
                                     nga.field('order_status'),
                                     nga.field('pay_id'),
                                     nga.field('buyer_nickname'),
-                                 //   nga.field('buyer_email'),
-                               //     nga.field('buyer_name'),
                                     nga.field('abnormal_name','string'),
                                     nga.field('abnormal_id','number').isDetailLink(true).label('异常订单编号'),
                                  //   nga.field('abnormal_time','datetime'),

@@ -19,6 +19,8 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     admin.addEntity(nga.entity('customers'));
     admin.addEntity(nga.entity('categories'));
     admin.addEntity(nga.entity('products'));
+    admin.addEntity(nga.entity('items'));
+    admin.addEntity(nga.entity('tags'));
     admin.addEntity(nga.entity('reviews'));
     admin.addEntity(nga.entity('commands'));
     admin.addEntity(nga.entity('settings'));
@@ -26,6 +28,8 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     require('./customers/config')(nga, admin);
     require('./categories/config')(nga, admin);
     require('./products/config')(nga, admin);
+    require('./items/config')(nga, admin);
+    require('./tags/config')(nga, admin);
     require('./reviews/config')(nga, admin);
     require('./commands/config')(nga, admin);
     require('./settings/config')(nga, admin);
@@ -203,7 +207,7 @@ myApp.run(['Restangular','progression', 'notification','$http','$window','ngDial
     });
     Restangular.addResponseInterceptor(function(data, operation, what, url, response) {
 
-       console.log(what,operation,data);
+       console.log(what,operation,data);//,response);
        if(data.Code=='2002'){
           notification.log(`Please  login!`, { addnCls: 'humane-flatty-success' });
             window.localStorage.removeItem('posters_galore_login');
@@ -219,15 +223,12 @@ myApp.run(['Restangular','progression', 'notification','$http','$window','ngDial
 
         return  data.data.list;
        }
-       if(operation=='getList' &&(what=='categories'||what=='products')){
+       if(operation=='getList' &&(what=='categories'||what=='products'||what=='customers')){
 
+        //console.log(response);
         return  data.data;
        }
-        if (operation == "getList") {
-            var contentRange = response.headers('Content-Range');
-            response.totalCount = contentRange.split('/')[1];
-        }
-        return data;
+    
     });
 
    Restangular.addFullRequestInterceptor(function(element, operation, what, url, headers, params) {
