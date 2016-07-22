@@ -21,6 +21,7 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     admin.addEntity(nga.entity('products'));
     admin.addEntity(nga.entity('items'));
     admin.addEntity(nga.entity('tags'));
+    admin.addEntity(nga.entity('tag-value'));
     admin.addEntity(nga.entity('reviews'));
     admin.addEntity(nga.entity('commands'));
     admin.addEntity(nga.entity('settings'));
@@ -30,6 +31,7 @@ myApp.config(['NgAdminConfigurationProvider', function (nga) {
     require('./products/config')(nga, admin);
     require('./items/config')(nga, admin);
     require('./tags/config')(nga, admin);
+    require('./tag-value/config')(nga,admin);
     require('./reviews/config')(nga, admin);
     require('./commands/config')(nga, admin);
     require('./settings/config')(nga, admin);
@@ -202,7 +204,7 @@ myApp.factory('AuthService', function ($rootScope,$http, Session) {
 
 */
 myApp.run(['Restangular','progression', 'notification','$http','$window','ngDialog',function (Restangular,progression, notification,$http,$window,ngDialog) {
-    Restangular.addElementTransformer('commands', function(element) {
+    Restangular.addElementTransformer('customers', function(element) {
         return element;
     });
     Restangular.addResponseInterceptor(function(data, operation, what, url, response) {
@@ -215,7 +217,7 @@ myApp.run(['Restangular','progression', 'notification','$http','$window','ngDial
             window.location.href = "./login.html";
             return   data;
        }
-       if(operation=='get' && (what=='commands'||what=='categories')){
+       if(operation=='get' && (what=='commands'||what=='categories'||what=='customers'||what=='tag-value')){
 
         return  data.data;
        }
@@ -223,7 +225,7 @@ myApp.run(['Restangular','progression', 'notification','$http','$window','ngDial
 
         return  data.data.list;
        }
-       if(operation=='getList' &&(what=='categories'||what=='products'||what=='customers')){
+       if(operation=='getList' &&(what=='categories'||what=='products'||what=='customers'||what=='tag-value')){
 
         //console.log(response);
         return  data.data;

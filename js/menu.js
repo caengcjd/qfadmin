@@ -6,7 +6,7 @@ export default function (nga, admin) {
             .active(path => path.indexOf('/customers') === 0) // active() is the function that determines if the menu is active
             .addChild(nga.menu()
                 .title('Leads')
-                .link('/customers/list?search={"has_ordered":"false"}') // use the same entity list for several menu items
+             //   .link('/customers/list?search={"has_ordered":"false"}') // use the same entity list for several menu items
                 .icon('<span class="fa fa-user-times fa-fw"></span>')) // no active() function => will never appear active
             .addChild(nga.menu(admin.getEntity('customers')).title('Users')
                 .icon('<span class="fa fa-tags fa-fw"></span>'))
@@ -47,7 +47,10 @@ export default function (nga, admin) {
             .addChild(nga.menu(admin.getEntity('items')).title('Items')
                 .icon('<span class="fa fa-tags fa-fw"></span>')).
             addChild(nga.menu(admin.getEntity('tags')).title('Tags')// nga.menu(entity) sets defaults title, link and active values correctly
+               .icon('<span class="fa fa-picture-o fa-fw"></span>')).
+              addChild(nga.menu(admin.getEntity('tag-value')).title('Tags values')// nga.menu(entity) sets defaults title, link and active values correctly
                .icon('<span class="fa fa-picture-o fa-fw"></span>'))
+
         )
         .addChild(nga.menu(admin.getEntity('reviews'))
             .icon('<span class="fa fa-comments fa-fw"></span>'))

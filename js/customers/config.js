@@ -1,16 +1,14 @@
-var moment = require('moment');
-var fromNow = v => moment(v).fromNow();
 
-var segments = require('../segments/segments').choices;
 export default function (nga, admin) {
 
     var API='http://test.api.qfplan.com/';//admin/access/login.json;
-    var customer = admin.getEntity('customers');
+    var customer = admin.getEntity('customers').identifier(nga.field('user_id'));
     customer.listView().url(function(){
      return  API+'Admin/user/list.json';
     })
         .title('Users')
         .fields([
+            nga.field('id'),
             nga.field('user_id')
                   .isDetailLink(true),
             nga.field('nickname') // use last_name for sorting
@@ -48,24 +46,24 @@ export default function (nga, admin) {
     })
         .title('<img   width="50" style="vertical-align: text-bottom"/> user  details')
         .fields([
-             nga.field('user_id')
+             nga.field('user_id').editable(false)
                   .isDetailLink(true),
             nga.field('nickname') // use last_name for sorting
-                .label('Name'),
-            nga.field('email', 'number')
+                .label('Name').editable(false),
+            nga.field('email', 'number').editable(false)
                 .cssClasses('hidden-xs'),
-            nga.field('telephone', 'number')
+            nga.field('telephone', 'number').editable(false)
                 .label('telephone')
                  .cssClasses('hidden-xs'),
-            nga.field('score', 'amount')
+            nga.field('score', 'amount').editable(false)
                 .cssClasses('hidden-xs'),
-            nga.field('reg_time', 'datetime')
+            nga.field('reg_time', 'datetime').editable(false)
                 .cssClasses('hidden-xs'),
-            nga.field('gender')
+            nga.field('gender').editable(false)
                 .label('gender')
                 .cssClasses('hidden-xs'),
-            nga.field('area_id')
+            nga.field('area_id').editable(false)
                 .cssClasses('hidden-xs'),
-                ])
+                ]);
     return customer;
 }
